@@ -3,20 +3,17 @@ namespace Beanbun\Middleware;
 
 use QL\QueryList;
 
-class Parser
-{
+class Parser {
 	public $auto = true;
 	public $ql = null;
 
-	public function __construct($config = [])
-	{
+	public function __construct($config = []) {
 		if (isset($config['auto'])) {
 			$this->auto = boolval($config['auto']);
 		}
 	}
 
-	public function handle($beanbun)
-	{
+	public function handle($beanbun) {
 		$beanbun->parser = $this;
 
 		if ($this->auto) {
@@ -26,13 +23,13 @@ class Parser
 		}
 	}
 
-	public function __call($method, $args)
-	{
+	public function __call($method, $args) {
 		return $this->ql->{$method}($args);
 	}
 
-	public function parseData($beanbun)
-	{
+	public function parseData($beanbun) {
+		$beanbun->fields = array_merge($beanbun->fields ?: [], $beanbun->options['fields'] ?: []);
+
 		if (!isset($beanbun->fields) || empty($beanbun->fields)) {
 			return;
 		}
@@ -41,14 +38,12 @@ class Parser
 		$beanbun->data = $this->getData($beanbun->fields);
 	}
 
-	public function cleanData($beanbun)
-	{
+	public function cleanData($beanbun) {
 		$beanbun->data = [];
 		$this->ql = null;
 	}
 
-	public function getData($fields)
-	{
+	public function getData($fields) {
 		$data = [];
 		foreach ($fields as $field) {
 			if (isset($field['selector'])) {
@@ -57,7 +52,7 @@ class Parser
 					$field['selector'][0] .= ':eq(0)';
 				}
 				$rules = [
-					$field['name'] => $field['selector']
+					$field['name'] => $field['selector'],
 				];
 				$callback = function ($item) use ($field) {
 					$item = $item[$field['name']];
@@ -73,7 +68,7 @@ class Parser
 				} else {
 					$data[$field['name']] = $repeated ? $data[$field['name']] : $data[$field['name']][0];
 				}
-				continue ;
+				continue;
 			}
 
 			if (isset($field['children'])) {
